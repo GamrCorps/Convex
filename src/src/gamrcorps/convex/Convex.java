@@ -226,7 +226,13 @@ public class Convex {
         final Convex x = new Convex();
         final Block b = Block.parse(new FileReader(args[0]), false);
         x.setArgs(Arrays.copyOfRange(args, 1, args.length));
-        x.readAll();
+        for (String s : x.getArgs()) {
+            if (s.startsWith("[")||s.startsWith("\"")||s.startsWith("{")||s.substring(0,0).matches("\\d")) {
+                x.runCode(Block.parse(new StringReader(s), false));
+            } else {
+                x.push(Conv.strToList(s));
+            }
+        }
         x.runCode(b);
     }
 }

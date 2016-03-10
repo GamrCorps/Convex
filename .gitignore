@@ -1,3 +1,5 @@
 .idea/
 out/production/
 Convex.iml
+out/artifacts/convex_shell/
+out/artifacts/convex/
