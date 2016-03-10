@@ -2534,7 +2534,7 @@ public class Ops {
                     final double z = toDouble(a);
                     return isLong(a) ? (long) Math.toRadians(z) : Math.toRadians(z);
                 } else if (isString(a)) {
-                    return new Regex((String)a);
+                    return new Regex(toStr(a));
                 }
                 throw fail(a);
             }
@@ -2579,6 +2579,178 @@ public class Ops {
                 return pair(a, b);
             }
         });
+
+		add(new Op2("ø") {
+			@Override
+			protected Object calc(Convex x, Object a, Object b) {
+				if (bothString(a, b)){
+					if (a instanceof Regex) {
+						Matcher matcher = Pattern.compile(toStr(a)).matcher(toStr(b));
+						return strToList(matcher.find()? matcher.group(0): "");
+					} else if (b instanceof Regex) {
+						Matcher matcher = Pattern.compile(toStr(b)).matcher(toStr(a));
+						return strToList(matcher.find()? matcher.group(0): "");
+					} else {
+						Matcher matcher = Pattern.compile(toStr(a)).matcher(toStr(b));
+						return strToList(matcher.find()? matcher.group(0): "");
+					}
+				}
+				throw fail(a, b);
+			}
+		});
+
+		add(new Op2("ð") {
+			@Override
+			protected Object calc(Convex x, Object a, Object b) {
+				if (bothString(a, b)){
+					if (a instanceof Regex) {
+						Matcher matcher = Pattern.compile(toStr(a)).matcher(toStr(b));
+						int count = 0;
+						while (matcher.find())
+							count++;
+						return count;
+					} else if (b instanceof Regex) {
+						Matcher matcher = Pattern.compile(toStr(b)).matcher(toStr(a));
+						int count = 0;
+						while (matcher.find())
+							count++;
+						return count;
+					} else {
+						Matcher matcher = Pattern.compile(toStr(a)).matcher(toStr(b));
+						int count = 0;
+						while (matcher.find())
+							count++;
+						return count;
+					}
+				}
+				throw fail(a, b);
+			}
+		});
+
+		add(new Op2("ô") {
+			@Override
+			protected Object calc(Convex x, Object a, Object b) {
+				if (bothString(a, b)){
+					if (a instanceof Regex) {
+						Matcher matcher = Pattern.compile(toStr(a)).matcher(toStr(b));
+						List<Object> allMatches = new ArrayList<Object>();
+						while (matcher.find()) {
+							allMatches.add(strToList(matcher.group()));
+						}
+						return allMatches;
+					} else if (b instanceof Regex) {
+						Matcher matcher = Pattern.compile(toStr(b)).matcher(toStr(a));
+						List<Object> allMatches = new ArrayList<Object>();
+						while (matcher.find()) {
+							allMatches.add(strToList(matcher.group()));
+						}
+						return allMatches;
+					} else {
+						Matcher matcher = Pattern.compile(toStr(a)).matcher(toStr(b));
+						List<Object> allMatches = new ArrayList<Object>();
+						while (matcher.find()) {
+							allMatches.add(strToList(matcher.group()));
+						}
+						return allMatches;
+					}
+				}
+				throw fail(a, b);
+			}
+		});
+
+		add(new Op2("õ") {
+			@Override
+			protected Object calc(Convex x, Object a, Object b) {
+				if (bothString(a, b)){
+					if (a instanceof Regex) {
+						Matcher matcher = Pattern.compile(toStr(a)).matcher(toStr(b));
+						List<Object> allMatches = new ArrayList<Object>();
+						while (matcher.find()) {
+							allMatches.add(matcher.start());
+						}
+						return allMatches;
+					} else if (b instanceof Regex) {
+						Matcher matcher = Pattern.compile(toStr(b)).matcher(toStr(a));
+						List<Object> allMatches = new ArrayList<Object>();
+						while (matcher.find()) {
+							allMatches.add(matcher.start());
+						}
+						return allMatches;
+					} else {
+						Matcher matcher = Pattern.compile(toStr(a)).matcher(toStr(b));
+						List<Object> allMatches = new ArrayList<Object>();
+						while (matcher.find()) {
+							allMatches.add(matcher.start());
+						}
+						return allMatches;
+					}
+				}
+				throw fail(a, b);
+			}
+		});
+
+		add(new Op3("ò") {
+			@Override
+			protected Object calc(Convex x, Object a, Object b, Object c) {
+				if (bothString(a, b) && isString(c)){
+					if (a instanceof Regex) {
+						return Pattern.compile(toStr(a)).matcher(toStr(b)).replaceAll(toStr(c));
+					} else if (b instanceof Regex) {
+						return Pattern.compile(toStr(b)).matcher(toStr(a)).replaceAll(toStr(c));
+					} else {
+						return Pattern.compile(toStr(a)).matcher(toStr(b)).replaceAll(toStr(c));
+					}
+				}
+				throw fail(a, b, c);
+			}
+		});
+
+		add(new Op3("ó") {
+			@Override
+			protected Object calc(Convex x, Object a, Object b, Object c) {
+				if (bothString(a, b) && isString(c)){
+					if (a instanceof Regex) {
+						return strToList(Pattern.compile(toStr(a)).matcher(toStr(b)).replaceFirst(toStr(c)));
+					} else if (b instanceof Regex) {
+						return strToList(Pattern.compile(toStr(b)).matcher(toStr(a)).replaceFirst(toStr(c)));
+					} else {
+						return strToList(Pattern.compile(toStr(a)).matcher(toStr(b)).replaceFirst(toStr(c)));
+					}
+				}
+				throw fail(a, b, c);
+			}
+		});
+
+		add(new Op2("ö") {
+			@Override
+			protected Object calc(Convex x, Object a, Object b) {
+				if (bothString(a, b)){
+					if (a instanceof Regex) {
+						String[] s = toStr(b).split(toStr(a));
+						List<Object> z = new ArrayList<Object>();
+						for (String str : s) {
+							z.add(strToList(str));
+						}
+						return z;
+					} else if (b instanceof Regex) {
+						String[] s = toStr(a).split(toStr(b));
+						List<Object> z = new ArrayList<Object>();
+						for (String str : s) {
+							z.add(strToList(str));
+						}
+						return z;
+					} else {
+						String[] s = toStr(a).split(toStr(b));
+						List<Object> z = new ArrayList<Object>();
+						for (String str : s) {
+							z.add(strToList(str));
+						}
+						return z;
+					}
+				}
+				throw fail(a, b);
+			}
+		});
 	}
 	
 	public static void main(final String... args) {

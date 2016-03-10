@@ -131,6 +131,9 @@ public class Conv {
 	}
 	
 	public static boolean isString(final Object o) {
+		if (isRegex(o)) {
+			return true;
+		}
 		if (!isList(o)) {
 			return false;
 		}
@@ -140,6 +143,10 @@ public class Conv {
 			}
 		}
 		return true;
+	}
+
+	public static boolean bothString(final Object a, final Object b) {
+		return isString(a) && isString(b);
 	}
 	
 	public static String listToStr(final Object o) {
