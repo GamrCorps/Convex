@@ -10,7 +10,7 @@ public class Shell {
             System.out.print("> ");
             final String s = x.readLine();
             final Block b = Block.parse(new StringReader(s), false);
-            x.runCode(b);
+            x.runCode(b, true);
             x.clear();
             System.out.println();
         }

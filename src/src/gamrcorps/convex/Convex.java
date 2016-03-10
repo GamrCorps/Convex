@@ -12,7 +12,7 @@ public class Convex {
 
     private List<Object> stack;
     private Object[] var = new Object[26];
-    private final In in;
+    public final In in;
     private final Out out;
     private final Out err;
     private final List<Integer> marks = new ArrayList<Integer>();
@@ -195,7 +195,7 @@ public class Convex {
         memo = null;
     }
 
-    public void runCode(final Block b) {
+    public void runCode(final Block b, boolean dump) {
         try {
             b.run(this);
         } catch (Exception e) {
@@ -205,7 +205,7 @@ public class Convex {
             System.err.println("Java exception:");
             e.printStackTrace();
         }
-        dump();
+        if (dump) dump();
     }
 
     public static String run(final String code, final String input) {
@@ -218,7 +218,7 @@ public class Convex {
         final Convex x = new Convex(in, out);
         x.setArgs(args);
         final Block b = Block.parse(new StringReader(code), false);
-        x.runCode(b);
+        x.runCode(b, true);
         return out.toString();
     }
 
@@ -228,11 +228,11 @@ public class Convex {
         x.setArgs(Arrays.copyOfRange(args, 1, args.length));
         for (String s : x.getArgs()) {
             if (s.startsWith("[")||s.startsWith("\"")||s.startsWith("{")||s.substring(0,0).matches("\\d")) {
-                x.runCode(Block.parse(new StringReader(s), false));
+                x.runCode(Block.parse(new StringReader(s), false), false);
             } else {
                 x.push(Conv.strToList(s));
             }
         }
-        x.runCode(b);
+        x.runCode(b, true);
     }
 }

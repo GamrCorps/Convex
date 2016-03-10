@@ -256,7 +256,7 @@ public class Block extends Op {
                 throw new RuntimeException("Unhandled operator after ':': " + op);
             case '×':
                 return Ops.quickFold(Ops.get("*"));
-            case '†':
+            case 'ª':
                 return Ops.quickFold(Ops.get("+"));
             case '.':
                 c1 = cs.get();
