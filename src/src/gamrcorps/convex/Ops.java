@@ -947,7 +947,7 @@ public class Ops {
                                 return (long) i;
                             }
                         }
-                        return -1;
+                        return -1l;
                     }
                     final int pos = isList(b) ? find(al, toList(b)) : al.indexOf(b);
                     return (long) pos;
@@ -1319,8 +1319,11 @@ public class Ops {
                     return l;
                 }
                 if (isList(a)) {
-                    final List<?> al = toList(a);
                     final BigInteger bb = toBigint(b).abs();
+                    if (isString(a)) {
+                        return adjustInt(new BigInteger(toStr(a), bb.intValue()));
+                    }
+                    final List<?> al = toList(a);
                     BigInteger t = BigInteger.ZERO;
                     for (Object o : al) {
                         t = t.multiply(bb).add(toBigint(o));
@@ -2666,11 +2669,11 @@ public class Ops {
             protected Object calc(Convex x, Object a, Object b, Object c) {
                 if (bothString(a, b) && isString(c)) {
                     if (a instanceof Regex) {
-                        return Pattern.compile(toStr(a)).matcher(toStr(b)).replaceAll(toStr(c));
+                        return strToList(Pattern.compile(toStr(a)).matcher(toStr(b)).replaceAll(toStr(c)));
                     } else if (b instanceof Regex) {
-                        return Pattern.compile(toStr(b)).matcher(toStr(a)).replaceAll(toStr(c));
+                        return strToList(Pattern.compile(toStr(b)).matcher(toStr(a)).replaceAll(toStr(c)));
                     } else {
-                        return Pattern.compile(toStr(a)).matcher(toStr(b)).replaceAll(toStr(c));
+                        return strToList(Pattern.compile(toStr(a)).matcher(toStr(b)).replaceAll(toStr(c)));
                     }
                 }
                 throw fail(a, b, c);
