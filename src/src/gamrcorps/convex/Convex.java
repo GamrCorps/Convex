@@ -6,6 +6,8 @@ import java.io.StringReader;
 import java.math.BigInteger;
 import java.util.*;
 
+import static src.gamrcorps.convex.Conv.strToList;
+
 public class Convex {
     private static Set<Class<?>> TYPES = new HashSet<Class<?>>(Arrays.<Class<?>>asList(ArrayList.class, Long.class, Double.class,
             BigInteger.class, Character.class, Block.class));
@@ -43,10 +45,11 @@ public class Convex {
         }
         setVar('N', Conv.strToList("\n"));
         setVar('P', Math.PI);
+        setVar('R', 0l);
         setVar('S', Conv.strToList(" "));
-        setVar('T', 0l);
-        setVar('U', 0l);
-        setVar('V', 0l);
+        setVar('T', Conv.strToList("abcdefghijklmnopqrstuvwxyz"));
+        setVar('U', Conv.strToList("abcdefghijklmnopqrstuvwxyz".toUpperCase()));
+        setVar('V', Conv.strToList("abcdefghijklmnopqrstuvwxyz".toUpperCase()+"abcdefghijklmnopqrstuvwxyz"));
         setVar('W', -1l);
         setVar('X', 1l);
         setVar('Y', 2l);
@@ -217,6 +220,11 @@ public class Convex {
         final Out out = new StringOut();
         final Convex x = new Convex(in, out);
         x.setArgs(args);
+        final List<Object> l = new ArrayList<Object>();
+        for (String s : x.getArgs()) {
+            l.add(strToList(s));
+        }
+        x.setVar('Q', l);
         final Block b = Block.parse(new StringReader(code), false);
         x.runCode(b, true);
         return out.toString();
@@ -226,6 +234,11 @@ public class Convex {
         final Convex x = new Convex();
         final Block b = Block.parse(new FileReader(args[0]), false);
         x.setArgs(Arrays.copyOfRange(args, 1, args.length));
+        final List<Object> l = new ArrayList<Object>();
+        for (String s : x.getArgs()) {
+            l.add(strToList(s));
+        }
+        x.setVar('Q', l);
         for (String s : x.getArgs()) {
             if (s.startsWith("[")||s.startsWith("\"")||s.startsWith("{")||s.substring(0,0).matches("\\d")) {
                 x.runCode(Block.parse(new StringReader(s), false), false);

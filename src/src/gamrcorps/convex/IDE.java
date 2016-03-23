@@ -1,6 +1,8 @@
 package src.gamrcorps.convex;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -22,6 +24,7 @@ public class IDE {
     private JTextField textField1;
     private JTextArea textArea3;
     private JButton runCodeButton;
+    private JLabel bytesLabel;
     public static IDE ide;
 
     public IDE() {
@@ -32,7 +35,7 @@ public class IDE {
                 Convex x = new Convex(new ScannerIn(new Scanner(textArea1.getText())), new TextAreaOut(textArea3), new TextAreaOut(textArea3, "[ERROR] "));
                 x.setArgs(getArgs(textField1.getText()));
                 for (String s : x.getArgs()) {
-                    if (s.startsWith("[")||s.startsWith("\"")||s.startsWith("{")||s.substring(0,1).matches("[0-9]")) {
+                    if (s.length()>0&&(s.startsWith("[")||s.startsWith("\"")||s.startsWith("{")||s.substring(0,1).matches("[0-9]"))) {
                         x.runCode(Block.parse(new StringReader(s), false), false);
                     } else {
                         x.push(Conv.strToList(s));
@@ -42,6 +45,22 @@ public class IDE {
                 final Block b = Block.parse(new StringReader(s), false);
                 x.runCode(b, true);
                 x.clear();
+            }
+        });
+        textArea1.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                bytesLabel.setText(textArea1.getText().length() + " bytes");
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                bytesLabel.setText(textArea1.getText().length() + " bytes");
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                bytesLabel.setText(textArea1.getText().length() + " bytes");
             }
         });
         textArea1.setFont(new Font("Courier New", Font.PLAIN, 20));
