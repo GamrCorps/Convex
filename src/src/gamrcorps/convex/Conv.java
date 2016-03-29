@@ -229,6 +229,9 @@ public class Conv {
         if (isRegex(o)) {
             return o.toString();
         }
+		if (o instanceof Quaternion) {
+			return o.toString();
+		}
 		throw new RuntimeException(o.getClass().getSimpleName() + " not handled");
 	}
 	

@@ -38,7 +38,8 @@ public class IDE {
                     if (s.length()>0&&(s.startsWith("[")||s.startsWith("\"")||s.startsWith("{")||s.substring(0,1).matches("[0-9]"))) {
                         x.runCode(Block.parse(new StringReader(s), false), false);
                     } else {
-                        x.push(Conv.strToList(s));
+                        if (s.length()!=0)
+                            x.push(Conv.strToList(s));
                     }
                 }
                 final String s = textArea1.getText();

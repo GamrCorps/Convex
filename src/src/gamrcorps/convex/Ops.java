@@ -380,6 +380,15 @@ public class Ops {
         add(new Op2("+") {
             @Override
             protected Object calc(final Convex x, final Object a, final Object b) {
+                if (a instanceof Quaternion || b instanceof Quaternion) {
+                    if (a instanceof Quaternion && b instanceof Quaternion) {
+                        return ((Quaternion) a).add(((Quaternion) b));
+                    } else if (a instanceof Quaternion) {
+                        return ((Quaternion) a).add(new Quaternion(toDouble(b)));
+                    } else {
+                        return ((Quaternion) b).add(new Quaternion(toDouble(a)));
+                    }
+                }
                 if (anyList(a, b) || bothChar(a, b)) {
                     final List<Object> l = toNewList(a);
                     l.addAll(toList(b));
@@ -409,6 +418,15 @@ public class Ops {
         add(new Op2("-") {
             @Override
             protected Object calc(final Convex x, final Object a, final Object b) {
+                if (a instanceof Quaternion || b instanceof Quaternion) {
+                    if (a instanceof Quaternion && b instanceof Quaternion) {
+                        return ((Quaternion) a).subtract(((Quaternion) b));
+                    } else if (a instanceof Quaternion) {
+                        return ((Quaternion) a).subtract(new Quaternion(toDouble(b)));
+                    } else {
+                        return new Quaternion(toDouble(a)).subtract(((Quaternion) b));
+                    }
+                }
                 if (bothChar(a, b)) {
                     return toLong(a) - toLong(b);
                 }
@@ -444,6 +462,15 @@ public class Ops {
         add(new Op2("*") {
             @Override
             protected Object calc(final Convex x, final Object a, final Object b) {
+                if (a instanceof Quaternion || b instanceof Quaternion) {
+                    if (a instanceof Quaternion && b instanceof Quaternion) {
+                        return ((Quaternion) a).multiply(((Quaternion) b));
+                    } else if (a instanceof Quaternion) {
+                        return ((Quaternion) a).multiply(toDouble(b));
+                    } else {
+                        return ((Quaternion) b).multiply(toDouble(a));
+                    }
+                }
                 if (isNumber(a) && (isList(b) || isChar(b) || isBlock(b))) {
                     return calc(x, b, a);
                 }
@@ -532,6 +559,15 @@ public class Ops {
         add(new Op2("/") {
             @Override
             protected Object calc(final Convex x, final Object a, final Object b) {
+                if (a instanceof Quaternion || b instanceof Quaternion) {
+                    if (a instanceof Quaternion && b instanceof Quaternion) {
+                        return ((Quaternion) a).divide(((Quaternion) b));
+                    } else if (a instanceof Quaternion) {
+                        return ((Quaternion) a).divide(toDouble(b));
+                    } else {
+                        return new Quaternion(toDouble(a)).divide(((Quaternion) b));
+                    }
+                }
                 if (isBlock(a)) {
                     if (isBlock(b)) {
                         throw fail(a, b);
@@ -734,6 +770,9 @@ public class Ops {
         add(new Op1("c") {
             @Override
             public Object calc(final Convex x, final Object a) {
+                if (a instanceof Quaternion) {
+                    return ((Quaternion) a).conjugate();
+                }
                 return toChar(a);
             }
         });
@@ -1577,6 +1616,9 @@ public class Ops {
         add(new Op1("z") {
             @Override
             protected Object calc(final Convex x, final Object a) {
+                if (a instanceof Quaternion) {
+                    return ((Quaternion) a).magnitude();
+                }
                 if (isNumber(a)) {
                     if (isDouble(a)) {
                         return Math.abs(toDouble(a));
@@ -2479,6 +2521,9 @@ public class Ops {
         add(new Op1("±") {
             @Override
             protected Object calc(Convex x, Object a) {
+                if (a instanceof Quaternion) {
+                    return ((Quaternion) a).multiply(-1);
+                }
                 if (!isNumber(a)) {
                     throw fail(a);
                 }
@@ -2521,6 +2566,9 @@ public class Ops {
         add(new Op1("¹") {
             @Override
             protected Object calc(Convex x, Object a) {
+                if (a instanceof Quaternion) {
+                    return new Quaternion(1).divide(((Quaternion) a));
+                }
                 if (!isNumber(a)) {
                     throw fail(a);
                 }
@@ -2753,10 +2801,58 @@ public class Ops {
                 return adjustInt(gcd);
             }
         });
+
+        add(new Op1("¤") {
+            @Override
+            protected Object calc(Convex x, Object a) {
+                if (isString(a)) {
+                    String[] coeff = toStr(a).split("[ijk]\\+?|\\+|((?<=\\d)(?=-\\d))");
+                    return new Quaternion(new Double(coeff[0]), new Double(coeff[1]), new Double(coeff[2]), new Double(coeff[3]));
+                } else if (isList(a)) {
+                    List<?> z = toList(a);
+                    if (bothNumber(z.get(0), z.get(1)) && bothNumber(z.get(2), z.get(3))) {
+                        return new Quaternion(toDouble(z.get(0)), toDouble(z.get(1)), toDouble(z.get(2)), toDouble(z.get(3)));
+                    }
+                }
+                throw fail(a);
+            }
+        });
+
+        add(new Op1("n") {
+            @Override
+            protected Object calc(Convex x, Object a) {
+                if (a instanceof Quaternion) {
+                    return ((Quaternion) a).norm();
+                }
+                throw fail(a);
+            }
+        });
+
+        add(new Op1("´") {
+            @Override
+            protected Object calc(Convex x, Object a) {
+                if (isNumber(a)) {
+                    final int n = toInt(a);
+                    final List<Object> l = new ArrayList<Object>(n);
+                    for (long i = 1; i <= n; ++i) {
+                        l.add(i);
+                    }
+                    return l;
+                }
+                throw fail(a);
+            }
+        });
+
+        add(new Op("¢") {
+            @Override
+            public void run(Convex x) {
+                x.push((Math.sqrt(5)+1.0)/2.0);
+            }
+        });
     }
 
     private static boolean isPrime(long n) {
-        for(long i = 2; i < n; ++i) {
+        for (long i = 2; i < n; ++i) {
             if (n % i == 0) {
                 return false;
             }
