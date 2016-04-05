@@ -2389,8 +2389,13 @@ public class Ops {
                     final List<?> al = toList(a);
                     final int n = al.size();
                     final int bi = toInt(b);
-                    if (bi <= 0 || bi > n) {
+                    if (bi <= 0) {
                         throw new RuntimeException("Invalid slice size");
+                    }
+                    if (bi > n) {
+                        final List<Object> z = new ArrayList<Object>();
+                        z.add(new ArrayList<Object>(al.subList(0,al.size())));
+                        return z;
                     }
                     final List<Object> l = new ArrayList<Object>(n - bi + 1);
                     for (int i = 0; i < n - bi + 1; ++i) {
