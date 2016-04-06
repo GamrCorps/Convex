@@ -84,7 +84,7 @@ public class Quaternion {
     }
 
     public Quaternion divide(double scalar) {
-        return new Quaternion(scalar / a, scalar / b, scalar / c, scalar / d);
+        return new Quaternion(a / scalar, b / scalar, c / scalar, d / scalar);
     }
 
     public Quaternion divide(double a, double b, double c, double d) {
@@ -92,11 +92,24 @@ public class Quaternion {
     }
 
     public Quaternion divide(Quaternion q) {
-        return multiply(conjugate(q)).divide(norm(q));
+        return multiply(conjugate(q)).divide(q.norm());
+    }
+
+    public static Quaternion stringToQuaternion (String input) {
+        String output = input.replaceAll("\\b[ijk]", "1$0");
+        output = output.replaceAll("^(?!.*\\d([+-]|$))", "0+");
+        output = output.replaceAll("^(?!.*i)", "+0i+");
+        output = output.replaceAll("^(?!.*j)", "0j+");
+        output = output.replaceAll("^(?!.*k)", "0k+");
+        double i = new Double (output.replaceAll("(?![+-]?\\d\\.?\\d*i).",""));
+        double j = new Double (output.replaceAll("(?![+-]?\\d\\.?\\d*j).",""));
+        double k = new Double (output.replaceAll("(?![+-]?\\d\\.?\\d*k).",""));
+        double s = new Double (output.replaceAll("(?!\\W?\\d+\\b).",""));
+        return new Quaternion(s, i, j, k);
     }
 
     @Override
     public String toString() {
-        return "" + a + (b < 0 ? "" : "+") + b + "i" + (c < 0 ? "" : "+") + c + "j" + (d < 0 ? "" : "+") + d + "k";
+        return "" + Conv.simplify(a) + (b < 0 ? "" : "+") + Conv.simplify(b) + "i" + (c < 0 ? "" : "+") + Conv.simplify(c) + "j" + (d < 0 ? "" : "+") + Conv.simplify(d) + "k";
     }
 }

@@ -2811,8 +2811,7 @@ public class Ops {
             @Override
             protected Object calc(Convex x, Object a) {
                 if (isString(a)) {
-                    String[] coeff = toStr(a).split("[ijk]\\+?|\\+|((?<=\\d)(?=-\\d))");
-                    return new Quaternion(new Double(coeff[0]), new Double(coeff[1]), new Double(coeff[2]), new Double(coeff[3]));
+                    return Quaternion.stringToQuaternion(toStr(a));
                 } else if (isList(a)) {
                     List<?> z = toList(a);
                     if (bothNumber(z.get(0), z.get(1)) && bothNumber(z.get(2), z.get(3))) {

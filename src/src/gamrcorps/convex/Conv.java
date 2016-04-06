@@ -283,4 +283,11 @@ public class Conv {
 	public static boolean isRegex(final Object o) {
         return o instanceof Regex;
     }
+
+	public static Object simplify(double d) {
+		if (d == (int) d){
+			return (int) d;
+		}
+		return d;
+	}
 }
