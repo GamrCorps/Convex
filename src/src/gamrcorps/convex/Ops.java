@@ -2848,6 +2848,16 @@ public class Ops {
                 x.push((Math.sqrt(5)+1.0)/2.0);
             }
         });
+
+        add(new Op2("æ") {
+            @Override
+            public Object calc(Convex x, Object a, Object b) {
+                x.push(a);
+                x.push(b);
+                x.push(a);
+                return b;
+            }
+        });
     }
 
     private static boolean isPrime(long n) {

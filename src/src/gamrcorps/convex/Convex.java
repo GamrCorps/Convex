@@ -70,7 +70,8 @@ public class Convex {
     public Object pop() {
         final int n = stack.size();
         if (n == 0) {
-            throw new RuntimeException("The stack is empty");
+            //throw new RuntimeException("The stack is empty");
+            return 0L;
         }
         for (int i = marks.size() - 1; i >= 0; --i) {
             if (marks.get(i) == n) {
