@@ -285,8 +285,8 @@ public class Conv {
     }
 
 	public static Object simplify(double d) {
-		if (d == (int) d){
-			return (int) d;
+		if (d == (long) d){
+			return (long) d;
 		}
 		return d;
 	}

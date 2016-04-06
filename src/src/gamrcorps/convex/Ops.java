@@ -2493,8 +2493,7 @@ public class Ops {
                 if (!isNumber(a)) {
                     throw fail(a);
                 }
-                final double z = toDouble(a);
-                return isLong(a) ? (long) z / 2.0 : z / 2.0;
+                return simplify(toDouble(a)/2.0);
             }
         });
 
@@ -2518,8 +2517,7 @@ public class Ops {
                 if (!isNumber(a)) {
                     throw fail(a);
                 }
-                final double z = toDouble(a);
-                return isLong(a) ? (long) Math.pow(z, 3) : Math.pow(z, 3);
+                return simplify(Math.pow(toDouble(a), 3));
             }
         });
 
@@ -2547,8 +2545,7 @@ public class Ops {
                 if (!isNumber(a)) {
                     throw fail(a);
                 }
-                final double z = toDouble(a);
-                return isLong(a) ? (long) Math.toDegrees(z) : Math.toDegrees(z);
+                return simplify(Math.toDegrees(toDouble(a)));
             }
         });
 
@@ -2577,8 +2574,7 @@ public class Ops {
                 if (!isNumber(a)) {
                     throw fail(a);
                 }
-                final double z = toDouble(a);
-                return isLong(a) ? (long) 1.0 / z : 1.0 / z;
+                return simplify(1.0/toDouble(a));
             }
         });
 
@@ -2588,8 +2584,7 @@ public class Ops {
                 if (!isNumber(a)) {
                     throw fail(a);
                 }
-                final double z = toDouble(a);
-                return isLong(a) ? (long) Math.floor(z) : Math.floor(z);
+                return simplify(Math.floor(toDouble(a)));
             }
         });
 
@@ -2600,7 +2595,7 @@ public class Ops {
                     throw fail(a);
                 }
                 final double z = toDouble(a);
-                return isLong(a) ? (long) Math.ceil(z) : Math.ceil(z);
+                return simplify(Math.ceil(toDouble(a)));
             }
         });
 
