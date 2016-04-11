@@ -2581,21 +2581,32 @@ public class Ops {
         add(new Op1("¬") {
             @Override
             protected Object calc(Convex x, Object a) {
-                if (!isNumber(a)) {
-                    throw fail(a);
+                if (isChar(a)) {
+                    return Character.toLowerCase(toChar(a));
                 }
-                return simplify(Math.floor(toDouble(a)));
+                if (isString(a)) {
+                    return strToList(listToStr(a).toLowerCase());
+                }
+                if (isNumber(a)) {
+                    return simplify(Math.floor(toDouble(a)));
+                }
+                throw fail(a);
             }
         });
 
         add(new Op1("¯") {
             @Override
             protected Object calc(Convex x, Object a) {
-                if (!isNumber(a)) {
-                    throw fail(a);
+                if (isChar(a)) {
+                    return Character.toUpperCase(toChar(a));
                 }
-                final double z = toDouble(a);
-                return simplify(Math.ceil(toDouble(a)));
+                if (isString(a)) {
+                    return strToList(listToStr(a).toUpperCase());
+                }
+                if (isNumber(a)) {
+                    return simplify(Math.ceil(toDouble(a)));
+                }
+                throw fail(a);
             }
         });
 
@@ -2856,6 +2867,26 @@ public class Ops {
                 x.push(b);
                 x.push(a);
                 return b;
+            }
+        });
+
+        add(new Op1("Ö") {
+            @Override
+            protected Object calc(Convex x, Object a) {
+                if (isString(a)) {
+                    return strToList(StringCompressor.compress(toStr(a)));
+                }
+                throw fail(a);
+            }
+        });
+
+        add(new Op1("Ü") {
+            @Override
+            protected Object calc(Convex x, Object a) {
+                if (isString(a)) {
+                    return strToList(StringCompressor.decompress(toStr(a)));
+                }
+                throw fail(a);
             }
         });
     }
