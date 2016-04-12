@@ -22,7 +22,7 @@ public class StringCompressor {
         for (char c : raw) {
             binaryStrings.add(Integer.toBinaryString((int)Math.pow(2, blockSize) + characterMap.indexOf(c)).substring(1));
         }
-        binaryStrings.add(0, Integer.toBinaryString(blockSize));
+        binaryStrings.add(0, Integer.toBinaryString(blockSize).substring(1));
         String concat = "";
         for (String s : binaryStrings) {
             concat+=s;
@@ -45,8 +45,8 @@ public class StringCompressor {
         for (char c : str.toCharArray()) {
             binaryRep += Integer.toBinaryString(256 + c).substring(1);
         }
-        int blockSize = Integer.parseInt(binaryRep.substring(0,3),2);
-        binaryRep = binaryRep.substring(3);
+        int blockSize = Integer.parseInt("1"+binaryRep.substring(0,2),2);
+        binaryRep = binaryRep.substring(2);
         List<String> blocks = new ArrayList<String>();
         int m = binaryRep.length();
         for (int i = 0; i < m; i += blockSize) {
@@ -62,7 +62,7 @@ public class StringCompressor {
 
     public static void main (String[] args) {
         String s;
-        System.out.println(s=compress("HELLO, WORLD"));
+        System.out.println(s=compress("Hello, World!"));
         System.out.println(decompress(s));
     }
 }

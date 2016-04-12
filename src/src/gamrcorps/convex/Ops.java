@@ -2889,6 +2889,37 @@ public class Ops {
                 throw fail(a);
             }
         });
+
+        add(new Op2("Û") {
+            @Override
+            protected Object calc(Convex x, Object a, Object b) {
+                if (!isList(a)&&!isList(b)) {
+                    return boolVal(a.getClass().getSimpleName().equals(b.getClass().getSimpleName()));
+                } else {
+                    if (isList(a)&&isList(b)) {
+                        List<?> la = toList(a);
+                        List<?> lb = toList(b);
+                        if (la.size()!=lb.size()) return boolVal(false);
+                        for (int i = 0; i < la.size(); i++) {
+                            if (!la.get(i).getClass().getSimpleName().equals(lb.get(i).getClass().getSimpleName())) return boolVal(false);
+                        }
+                        return boolVal(true);
+                    } else if (isList(a)) {
+                        List<?> la = toList(a);
+                        for (Object o : la) {
+                            if (!o.getClass().getSimpleName().equals(b.getClass().getSimpleName())) return boolVal(false);
+                        }
+                        return boolVal(true);
+                    } else {
+                        List<?> la = toList(a);
+                        for (Object o : la) {
+                            if (!o.getClass().getSimpleName().equals(a.getClass().getSimpleName())) return boolVal(false);
+                        }
+                        return boolVal(true);
+                    }
+                }
+            }
+        });
     }
 
     private static boolean isPrime(long n) {
