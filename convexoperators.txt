@@ -1,0 +1,182 @@
+Misc Operators:
+
+! - boolean NOT
+# - power, find index
+$ - copy from stack, sort
+% - mod, split, map
+& - bitwise AND, set intersection, if-then
+( - decrement, uncons from left
+) - increment, uncons from right
+* - multiply, join, repeat, fold (reduce)
++ - add, concat
+, - range([0,N)), length, filter
+- - subtract, remove
+. - vectorize
+/ - divide, split, each
+: - set variable, quick map, quick fold
+; - pop and discard
+< - compare (less), slice before
+= - compare (equal), get array item, find value
+> - compare (greater), slice from
+? - if (ternary)
+@ - rotate top 3 elements on the stack
+[ - start array
+\ - swap top 2 elements on the stack
+] - end array
+^ - bitwise XOR, symmetric difference
+_ - duplicate top element on the stack
+` - string representation
+a - wrap in array
+b - base conversion
+c - convert to char
+d - convert to double
+f - for loop, map with extra parameter
+g - do-while loop that pops the condition, signum, get from url
+h - do-while loop that leaves the condition on the stack
+i - convert to integer
+j - memoized recursion
+l - read line
+o - print
+p - print string representation and newline
+q - read the whole input
+r - read token (whitespace-separated)
+s - convert to string (char array)
+t - set array item
+w - while loop
+z - zip (transpose), abs
+| - bitwise OR, set union, if-else
+~ - bitwise NOT, eval, dump array
+¡ - factorial
+½ - halve (n/2)
+² - square (n^2)
+³ - cube (n^3)
+± - flip sign
+° - convert to degrees
+þ - convert to radians
+¹ - reciprocal (1/n)
+¬ - floor, lowercase
+¯ - ceiling, uppercase
+¶ - pair
+µ - nth prime
+Ð - GCD
+´ - range ((0,N])
+æ - double duplicate
+Û - type equality (typeof(a)==typeof(b))
+× - fold with multiplication
+ª - fold with addition
+
+"Array" 2-char Operators:
+
+e followed by numeric literal - scientific notation
+e! - unique permutations
+e# - line comment (not really an operator)
+e% - string formatting a la printf
+e& - logical and
+e* - repeat each item in an array
+e< - min of 2 values
+e= - count occurrences
+e> - max of 2 values
+e[ - pad array to the left
+e\ - swap 2 array items
+e] - pad array to the right
+e_ - flatten array
+e` - RLE encode
+ea - command-line args
+ed - debug (show stack contents)
+ee - enumerate array
+el - lowercase
+er - transliteration (element replacement)
+es - timestamp (milliseconds from the epoch)
+et - local time
+eu - uppercase
+ew - overlapping slices
+e| - logical or
+e~ - RLE decode
+
+
+"Math" 2-char Operators:
+
+m followed by numeric literal - subtract/remove (same as "-" but avoids the need for a space after it)
+m! - factorial, permutations with duplicates
+m* - cartesian product, cartesian power
+m< - bit shift, rotate left
+m> - bit shift, rotate right
+mC - arccos
+mF - factorization with exponents
+mL - log with base
+mO - round with precision
+mQ - integer square root
+mR - random choice
+mS - arcsin
+mT - arctan
+m[ - floor
+m] - ceil
+ma - atan2
+mc - cos
+md - divmod
+me - exp
+mf - factorization
+mh - hypot
+ml - ln (natural logarithm)
+mo - round
+mp - prime
+mq - sqrt
+mr - random number, shuffle
+ms - sin
+mt - tan
+
+
+Regex Operators:
+
+® - start regex literal (ended by ")
+þ - convert string to regex type
+ø - first match
+ð - amount of matches
+ô - array of matches
+õ - indexes of matches
+ò - replace all occurances
+ó - replace first occurance
+ö - split
+
+
+Quaternion/Imaginary Number Operators:
+
+¤ - convert string/list to quaternion
+n - norm of quaternion
+
+
+String Compression Operators:
+
+Ö - compress string
+Ü - decompress string
+
+
+Variables:
+
+A=10
+B=11
+C=12
+D=13
+E=14
+F=15
+G=16
+H=17
+I=18
+J=19
+K=20
+L="" (same as [])
+M=""
+N="\n" (newline string)
+O=""
+P=pi (3.141592653589793)
+Q=""
+R=0
+S=" " (space)
+T="abcdefghijklmnopqrstuvwxyz" (lowercase letters)
+U="ABCDEFGHIJKLMNOPQRSTUVWXYZ" (uppercase letters)
+V="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz" (uppercase and lowercase letters)
+W=-1
+X=1
+Y=2
+Z=3
+¢=phi (1.618033988749895)

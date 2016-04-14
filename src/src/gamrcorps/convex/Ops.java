@@ -865,6 +865,7 @@ public class Ops {
             }
         });
 
+        /*
         add(new Op1("g") {
             private final Pattern charsetPattern = Pattern.compile(";\\s*CHARSET\\s*=\\s*(\\S+)");
             private final char[] buf = new char[4096];
@@ -920,6 +921,7 @@ public class Ops {
                 }
             }
         });
+        */
 
         add(new Op1("h") {
             @Override
