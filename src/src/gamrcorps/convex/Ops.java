@@ -865,10 +865,9 @@ public class Ops {
             }
         });
 
-        /*
         add(new Op1("g") {
-            private final Pattern charsetPattern = Pattern.compile(";\\s*CHARSET\\s*=\\s*(\\S+)");
-            private final char[] buf = new char[4096];
+            //private final Pattern charsetPattern = Pattern.compile(";\\s*CHARSET\\s*=\\s*(\\S+)");
+            //private final char[] buf = new char[4096];
 
             @Override
             protected Object calc(final Convex x, final Object a) {
@@ -888,6 +887,8 @@ public class Ops {
                     }
                     return (long) toBigint(a).signum();
                 }
+                throw fail(a);
+                /*
                 if (!isString(a)) {
                     throw fail(a);
                 }
@@ -919,9 +920,10 @@ public class Ops {
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
+                */
             }
         });
-        */
+
 
         add(new Op1("h") {
             @Override
@@ -2920,6 +2922,48 @@ public class Ops {
                         return boolVal(true);
                     }
                 }
+            }
+        });
+
+        add(new Op1("¿") {
+            @Override
+            protected Object calc(Convex x, Object a) {
+                if (!isNumber(a)) {
+                    throw fail(a);
+                }
+                return boolVal(toLong(a)==0||toLong(a)==1);
+            }
+        });
+
+        add(new Op1("Å") {
+            @Override
+            protected Object calc(Convex x, Object a) {
+                if (!isList(a)) {
+                    throw fail(a);
+                }
+                List<Object> unique = new ArrayList<Object>();
+                for (Object obj : toList(a)) {
+                    if (!unique.contains(obj)) unique.add(obj);
+                }
+                return unique;
+            }
+        });
+
+        add(new Op1("Ä") {
+            @Override
+            protected Object calc(Convex x, Object a) {
+                if (!isList(a)) {
+                    throw fail(a);
+                }
+                List<Object> unique = new ArrayList<Object>();
+                Object last = null;
+                for (Object obj : toList(a)) {
+                    if (obj!=last) {
+                        unique.add(obj);
+                        last = obj;
+                    }
+                }
+                return unique;
             }
         });
     }

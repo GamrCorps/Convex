@@ -1,4 +1,4 @@
-Misc Operators:
+ï»¿Misc Operators:
 
 ! - boolean NOT
 # - power, find index
@@ -31,7 +31,7 @@ b - base conversion
 c - convert to char
 d - convert to double
 f - for loop, map with extra parameter
-g - do-while loop that pops the condition, signum, get from url
+g - do-while loop that pops the condition, signum
 h - do-while loop that leaves the condition on the stack
 i - convert to integer
 j - memoized recursion
@@ -46,24 +46,28 @@ w - while loop
 z - zip (transpose), abs
 | - bitwise OR, set union, if-else
 ~ - bitwise NOT, eval, dump array
-¡ - factorial
-½ - halve (n/2)
-² - square (n^2)
-³ - cube (n^3)
-± - flip sign
-° - convert to degrees
-ş - convert to radians
-¹ - reciprocal (1/n)
-¬ - floor, lowercase
-¯ - ceiling, uppercase
-¶ - pair
-µ - nth prime
-Ğ - GCD
-´ - range ((0,N])
-æ - double duplicate
-Û - type equality (typeof(a)==typeof(b))
-× - fold with multiplication
-ª - fold with addition
+Â¡ - factorial
+Â½ - halve (n/2)
+Â² - square (n^2)
+Â³ - cube (n^3)
+Â± - flip sign
+Â° - convert to degrees
+Ã¾ - convert to radians
+Â¹ - reciprocal (1/n)
+Â¬ - floor, lowercase
+Â¯ - ceiling, uppercase
+Â¶ - pair
+Âµ - nth prime
+Ã - GCD
+Â´ - range ((0,N])
+Ã¦ - double duplicate
+Ã› - type equality (typeof(a)==typeof(b))
+Ã— - fold with multiplication
+Âª - fold with addition
+Â¿ - true if 0 or 1
+Ã… - unique list
+Ã„ - connected unique list
+
 
 "Array" 2-char Operators:
 
@@ -128,27 +132,27 @@ mt - tan
 
 Regex Operators:
 
-® - start regex literal (ended by ")
-ş - convert string to regex type
-ø - first match
-ğ - amount of matches
-ô - array of matches
-õ - indexes of matches
-ò - replace all occurances
-ó - replace first occurance
-ö - split
+Â® - start regex literal (ended by ")
+Ã¾ - convert string to regex type
+Ã¸ - first match
+Ã° - amount of matches
+Ã´ - array of matches
+Ãµ - indexes of matches
+Ã² - replace all occurances
+Ã³ - replace first occurance
+Ã¶ - split
 
 
 Quaternion/Imaginary Number Operators:
 
-¤ - convert string/list to quaternion
+Â¤ - convert string/list to quaternion
 n - norm of quaternion
 
 
 String Compression Operators:
 
-Ö - compress string
-Ü - decompress string
+Ã– - compress string
+Ãœ - decompress string
 
 
 Variables:
@@ -179,4 +183,4 @@ W=-1
 X=1
 Y=2
 Z=3
-¢=phi (1.618033988749895)
+Â¢=phi (1.618033988749895)
