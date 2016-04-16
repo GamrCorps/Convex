@@ -50,7 +50,7 @@ z - zip (transpose), abs
 ½ - halve (n/2)
 ² - square (n^2)
 ³ - cube (n^3)
-± - flip sign
+± - flip sign, change case
 ° - convert to degrees
 þ - convert to radians
 ¹ - reciprocal (1/n)
@@ -67,7 +67,14 @@ z - zip (transpose), abs
 ¿ - true if 0 or 1
 Å - unique list
 Ä - connected unique list
-
+¥ -	reverse array
+Ø	- string formatting
+£	- random
+Ë	- transliteration
+Ã	- input line and eval
+Â	- input all and eval
+Ê	- command line args (list)
+ê	- command line args (separate)
 
 "Array" 2-char Operators:
 
