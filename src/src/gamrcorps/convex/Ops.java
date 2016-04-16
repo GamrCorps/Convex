@@ -2531,6 +2531,17 @@ public class Ops {
                 if (a instanceof Quaternion) {
                     return ((Quaternion) a).multiply(-1);
                 }
+                if (isChar(a)) {
+                    return (char)(toChar(a)^32);
+                }
+                if (isString(a)) {
+                    List<?> list = toList(a);
+                    List<Object> result = new ArrayList<Object>();
+                    for (Object c : list) {
+                        result.add((char)(toChar(c)^32));
+                    }
+                    return result;
+                }
                 if (!isNumber(a)) {
                     throw fail(a);
                 }
@@ -2964,6 +2975,142 @@ public class Ops {
                     }
                 }
                 return unique;
+            }
+        });
+
+        add(new Op1("¥") {
+            @Override
+            protected Object calc(Convex x, Object a) {
+                if (!isList(a)) throw fail(a);
+                List<?> list = toList(a);
+                List<Object> result = new ArrayList<Object>();
+                for (Object obj: list) {
+                    result.add(0,obj);
+                }
+                return result;
+            }
+        });
+
+        add(new Op2("Ø") {
+            @Override
+            protected Object calc(Convex x, Object a, Object b) {
+                if (isString(a)) {
+                    final String fmt = toStr(a);
+                    final Object[] ba = toList(b).toArray();
+                    for (int i = 0; i < ba.length; ++i) {
+                        if (isString(ba[i])) {
+                            ba[i] = toStr(ba[i]);
+                        }
+                    }
+                    return strToList(String.format(fmt, ba));
+                }
+                if (isString(b)) {
+                    return calc(x, b, a);
+                }
+                throw fail(a, b);
+            }
+        });
+
+        add(new Op2("£") {
+            @Override
+            protected Object calc(Convex x, Object a, Object b) {
+                final Random r = x.getRandom();
+                if (isNumber(a)) {
+                    if (isDouble(a)) {
+                        return r.nextDouble() * toDouble(a);
+                    }
+                    if (isLong(a)) {
+                        final long al = toLong(a);
+                        if (al <= 0) {
+                            throw new IllegalArgumentException("Parameter must be positive");
+                        }
+                        if (al <= Integer.MAX_VALUE) {
+                            return (long) r.nextInt((int) al);
+                        }
+                        long bits, val;
+                        do {
+                            bits = r.nextLong() & Long.MAX_VALUE;
+                            val = bits % al;
+                        } while (bits - val + (al - 1) < 0l);
+                        return val;
+                    }
+                    final BigInteger ab = toBigint(a);
+                    if (ab.signum() <= 0) {
+                        throw new IllegalArgumentException("Parameter must be positive");
+                    }
+                    final int n = ab.bitLength();
+                    BigInteger bits, val;
+                    do {
+                        bits = new BigInteger(n, r);
+                        val = bits.mod(ab);
+                    } while (bits.subtract(val).add(ab).subtract(BigInteger.ONE).bitLength() <= n);
+                    return val;
+                }
+                if (isList(a)) {
+                    final List<Object> l = toNewList(a);
+                    Collections.shuffle(l, r);
+                    return l;
+                }
+                throw fail(a);
+            }
+        });
+
+        add(new Op3("Ë") {
+            @Override
+            protected Object calc(Convex x, Object a, Object b, Object c) {
+                if (!isList(a)) {
+                    throw fail(a, b, c);
+                }
+                final List<?> al = toList(a);
+                final List<?> bl = toList(b);
+                final List<?> cl = toList(c);
+                final int n = cl.size();
+                final List<Object> l = new ArrayList<Object>(al.size());
+                for (Object o : al) {
+                    final int t = bl.indexOf(o);
+                    if (t < 0) {
+                        l.add(o);
+                    } else if (t < n) {
+                        l.add(cl.get(t));
+                    } else {
+                        l.add(cl.get(n - 1));
+                    }
+                }
+                return l;
+            }
+        });
+
+        add(new Op("Ã") {
+            @Override
+            public void run(Convex x) {
+                Block.parse(new StringReader(toStr(x.readLine())), false).run(x);
+            }
+        });
+
+        add(new Op("Â") {
+            @Override
+            public void run(Convex x) {
+                Block.parse(new StringReader(toStr(x.readAll())), false).run(x);
+            }
+        });
+
+        add(new Op("Ê") {
+            @Override
+            public void run(Convex x) {
+                final List<Object> l = new ArrayList<Object>();
+                for (String s : x.getArgs()) {
+                    l.add(strToList(s));
+                }
+                x.push(l);
+            }
+        });
+
+        add(new Op("ê") {
+            @Override
+            public void run(Convex x) {
+                for (String s : x.getArgs()) {
+                    x.push(strToList(s));
+                }
             }
         });
     }
