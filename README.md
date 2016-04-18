@@ -1,4 +1,4 @@
-# Convex
+![Convex](http://i.imgur.com/JrZYUzQ.png?1)
 Convex is a stack-based golfing esolang based on Golfscript and CJam. Convex adds many new operators and removes many two-character operators.
 
 **HUGE thanks to aditsu for [allowing me](http://chat.stackexchange.com/transcript/message/28112803#28112803) to use the CJam codebase to get me started on this project!**
