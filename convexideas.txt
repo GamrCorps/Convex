@@ -1,0 +1,5 @@
+Convex Ideas
+
+ - min/max operators
+ - round 1-char
+ - not equal to op
