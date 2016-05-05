@@ -64,13 +64,17 @@ z - zip (transpose), abs
 Û - type equality (typeof(a)==typeof(b))
 × - fold with multiplication
 ª - fold with addition
-¿ - true if 0 or 1
+¿ - true if 0 or 1, reverse without popping
 Å - unique list
 Ä - connected unique list
 ¥ - reverse array
 Ø - string formatting
 £ - random
 Ë - transliteration
+« - min
+» - max
+¸ - LCM
+¦ - Double
 Ã - input line and eval
 Â - input all and eval
 Ê - command line args (list)
