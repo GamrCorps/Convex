@@ -2939,10 +2939,18 @@ public class Ops {
         add(new Op1("¿") {
             @Override
             protected Object calc(Convex x, Object a) {
-                if (!isNumber(a)) {
-                    throw fail(a);
+                if (isNumber(a)) {
+                    return boolVal(toLong(a)==0||toLong(a)==1);
+                } else if (isList(a)) {
+                    x.push(a);
+                    List<?> list = toList(a);
+                    List<Object> result = new ArrayList<Object>();
+                    for (Object obj: list) {
+                        result.add(0,obj);
+                    }
+                    return result;
                 }
-                return boolVal(toLong(a)==0||toLong(a)==1);
+                throw fail(a);
             }
         });
 
@@ -3111,6 +3119,68 @@ public class Ops {
                 for (String s : x.getArgs()) {
                     x.push(strToList(s));
                 }
+            }
+        });
+
+        add(new Op2("ë") {
+            @Override
+            protected Object calc(Convex x, Object a, Object b) {
+                if (!isList(a)) {
+                    throw fail(a, b);
+                }
+                final List<?> al = toList(a);
+                final List<?> bl = toList(b);
+                List<Object> cl = new ArrayList<Object>();
+                for (Object obj: bl) {
+                    cl.add(0,obj);
+                }
+                final int n = cl.size();
+                final List<Object> l = new ArrayList<Object>(al.size());
+                for (Object o : al) {
+                    final int t = bl.indexOf(o);
+                    if (t < 0) {
+                        l.add(o);
+                    } else if (t < n) {
+                        l.add(cl.get(t));
+                    } else {
+                        l.add(cl.get(n - 1));
+                    }
+                }
+                return l;
+            }
+        });
+
+        add(new Op("«") {
+            @Override
+            public void run(Convex x) {
+                Ops.get("e<").run(x);
+            }
+        });
+
+        add(new Op("»") {
+            @Override
+            public void run(Convex x) {
+                Ops.get("e>").run(x);
+            }
+        });
+
+        add(new Op2("¸") {
+            @Override
+            protected Object calc(Convex x, Object a, Object b) {
+                BigInteger b1 = BigInteger.valueOf(toLong(a));
+                BigInteger b2 = BigInteger.valueOf(toLong(b));
+                BigInteger gcd = b1.multiply(b2).divide(b1.gcd(b2));
+                return adjustInt(gcd);
+            }
+        });
+
+        add(new Op1("¦") {
+            @Override
+            protected Object calc(Convex x, Object a) {
+                if (!isNumber(a)) {
+                    throw fail(a);
+                }
+                return simplify(toDouble(a)*2.0);
             }
         });
     }

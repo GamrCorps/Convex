@@ -31,7 +31,8 @@ public class Block extends Op {
                 l.add(c);
             }
         } catch (NoSuchElementException e) {
-            throw new RuntimeException("Unfinished string");
+            return l;
+            //throw new RuntimeException("Unfinished string");
         }
     }
 
