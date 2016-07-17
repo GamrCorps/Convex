@@ -32,7 +32,7 @@ public class IDE {
             @Override
             public void actionPerformed(ActionEvent e) {
                 textArea3.setText("");
-                Convex x = new Convex(new ScannerIn(new Scanner(textArea1.getText())), new TextAreaOut(textArea3), new TextAreaOut(textArea3, "[ERROR] "));
+                Convex x = new Convex(new ScannerIn(new Scanner(textArea2.getText())), new TextAreaOut(textArea3), new TextAreaOut(textArea3, "[ERROR] "));
                 x.setArgs(getArgs(textField1.getText()));
                 for (String s : x.getArgs()) {
                     if (s.length()>0&&(s.startsWith("[")||s.startsWith("\"")||s.startsWith("{")||s.substring(0,1).matches("[0-9]"))) {

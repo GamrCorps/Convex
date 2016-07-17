@@ -71,7 +71,14 @@ public class Convex {
         final int n = stack.size();
         if (n == 0) {
             //throw new RuntimeException("The stack is empty");
-            return 0L;
+            String s = readLine();
+            if (s.length()>0&&(s.startsWith("[")||s.startsWith("\"")||s.startsWith("{")||s.substring(0,1).matches("[0-9]"))) {
+                this.runCode(Block.parse(new StringReader(s), false), false);
+            } else {
+                if (s.length()!=0)
+                    this.push(Conv.strToList(s));
+            }
+            return pop();
         }
         for (int i = marks.size() - 1; i >= 0; --i) {
             if (marks.get(i) == n) {

@@ -1,13 +1,8 @@
 package src.gamrcorps.convex;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.io.StringReader;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -15,258 +10,7 @@ import java.util.regex.Pattern;
 import static src.gamrcorps.convex.Conv.*;
 
 public class Ops {
-    private static final Op[] TABLE = new Op[256];
-    private static final Map<String, Op> MAP = new HashMap<String, Op>();
 
-    private static void add(final Op op) {
-        final String s = op.toString();
-        if (s.length() != 1) {
-            if (MAP.put(s, op) != null) {
-                throw new RuntimeException("Duplicate operator: " + s);
-            }
-            return;
-        }
-        final int x = s.charAt(0);
-        if (x > 255) {
-            throw new IllegalArgumentException(s);
-        }
-        if (TABLE[x] != null) {
-            throw new RuntimeException("Duplicate operator: " + s);
-        }
-        TABLE[x] = op;
-    }
-
-    public static Op get(final char c) {
-        if (c > 255) {
-            throw new IllegalArgumentException(String.valueOf(c));
-        }
-        return TABLE[c];
-    }
-
-    public static Op get(final String s) {
-        return s.length() == 1 ? get(s.charAt(0)) : MAP.get(s);
-    }
-
-    public static Op push(final Object o) {
-        return new Op(repr(o)) {
-            @Override
-            public void run(final Convex x) {
-                x.push(o);
-            }
-        };
-    }
-
-    public static Op pushVar(final char c) {
-        return new Op(String.valueOf(c)) {
-            @Override
-            public void run(final Convex x) {
-                final Object o = x.getVar(c);
-                if (isBlock(o)) {
-                    toBlock(o).run(x);
-                } else {
-                    x.push(o);
-                }
-            }
-        };
-    }
-
-    public static Op setVar(final char c) {
-        return new Op(":" + c) {
-            @Override
-            public void run(final Convex x) {
-                x.setVar(c, x.peek());
-            }
-        };
-    }
-
-    public static Op quickMap(final Op op) {
-        return new Op1(":" + op) {
-            @Override
-            public Object calc(final Convex x, final Object a) {
-                if (!isList(a)) {
-                    throw fail(a);
-                }
-                final List<?> al = toList(a);
-                x.mark();
-                for (Object o : al) {
-                    x.push(o);
-                    op.run(x);
-                }
-                x.popMark();
-                return null;
-            }
-        };
-    }
-
-    public static Op quickFold(final Op op) {
-        return new Op1(":" + op) {
-            @Override
-            public Object calc(final Convex x, final Object a) {
-                if (!isList(a)) {
-                    throw fail(a);
-                }
-                final List<?> al = toList(a);
-                final int n = al.size();
-                x.push(al.get(0));
-                for (int i = 1; i < n; ++i) {
-                    x.push(al.get(i));
-                    op.run(x);
-                }
-                return null;
-            }
-        };
-    }
-
-    public static Op quickMap2(final Op op) {
-        return new Op2("f" + op) {
-            @Override
-            public Object calc(final Convex x, final Object a, final Object b) {
-                if (isList(a)) {
-                    final List<?> al = toList(a);
-                    x.mark();
-                    for (Object o : al) {
-                        x.push(o);
-                        x.push(b);
-                        op.run(x);
-                    }
-                    x.popMark();
-                    return null;
-                }
-                if (isList(b)) {
-                    final List<?> bl = toList(b);
-                    x.mark();
-                    for (Object o : bl) {
-                        x.push(a);
-                        x.push(o);
-                        op.run(x);
-                    }
-                    x.popMark();
-                    return null;
-                }
-                throw fail(a, b);
-            }
-        };
-    }
-
-    public static Op forLoop(final char c) {
-        return new Op2("f" + c) {
-            @Override
-            protected Object calc(final Convex x, final Object a, final Object b) {
-                if (isBlock(b)) {
-                    final Block bb = toBlock(b);
-                    if (isNumber(a)) {
-                        final long al = toLong(a);
-                        for (long i = 0; i < al; ++i) {
-                            x.setVar(c, i);
-                            bb.run(x);
-                        }
-                        return null;
-                    }
-                    if (isList(a)) {
-                        final List<?> al = toList(a);
-                        for (Object i : al) {
-                            x.setVar(c, i);
-                            bb.run(x);
-                        }
-                        return null;
-                    }
-                } else if (isBlock(a)) {
-                    return calc(x, b, a);
-                }
-                throw fail(a, b);
-            }
-        };
-    }
-
-    public static Op vector(final Op op) {
-        return new Op2("." + op) {
-            @Override
-            public Object calc(final Convex x, final Object a, final Object b) {
-                if (!bothList(a, b)) {
-                    throw fail(a, b);
-                }
-                final List<?> al = toList(a);
-                final int an = al.size();
-                final List<?> bl = toList(b);
-                final int bn = bl.size();
-                final int n = Math.max(an, bn);
-                x.mark();
-                for (int i = 0; i < n; ++i) {
-                    if (i < an) {
-                        x.push(al.get(i));
-                        if (i < bn) {
-                            x.push(bl.get(i));
-                            op.run(x);
-                        }
-                    } else {
-                        x.push(bl.get(i));
-                    }
-                }
-                x.popMark();
-                return null;
-            }
-        };
-    }
-
-    public static Op e10(final Number exp) {
-        return new Op1("e" + exp) {
-            @Override
-            protected Object calc(final Convex x, final Object a) {
-                if (!isNumber(a)) {
-                    throw fail(a);
-                }
-                if (isDouble(exp)) {
-                    return toDouble(a) * Math.pow(10, exp.doubleValue());
-                }
-                if (!isLong(exp)) {
-                    throw fail(a);
-                }
-                final long bl = exp.longValue();
-                if (isDouble(a) || bl < 0) {
-                    return Double.parseDouble(a + "e" + bl);
-                }
-                return adjustInt(toBigint(a).multiply(BigInteger.TEN.pow((int) bl)));
-            }
-        };
-    }
-
-    protected static Object adjustInt(final BigInteger x) {
-        return x.bitLength() < 64 ? x.longValue() : x;
-    }
-
-    protected static final int compareLists(final List<?> a, final List<?> b) {
-        final int an = a.size();
-        final int bn = b.size();
-        final int n = Math.min(an, bn);
-        for (int i = 0; i < n; ++i) {
-            final int x = compare(a.get(i), b.get(i));
-            if (x != 0) {
-                return x;
-            }
-        }
-        return an - bn;
-    }
-
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    protected static final int compare(final Object a, final Object b) {
-        if (bothList(a, b)) {
-            return compareLists(toList(a), toList(b));
-        }
-        if (a.getClass() == b.getClass()) {
-            return ((Comparable) a).compareTo(b);
-        }
-        if (bothNumber(a, b)) {
-            if (anyDouble(a, b)) {
-                return Double.compare(toDouble(a), toDouble(b));
-            }
-            return toBigint(a).compareTo(toBigint(b));
-        }
-        if (anyChar(a, b) && anyNumber(a, b)) {
-            return ((Long) toLong(a)).compareTo(toLong(b));
-        }
-        throw new IllegalArgumentException("Can't compare " + a.getClass().getSimpleName()
-                + " with " + b.getClass().getSimpleName());
-    }
 
     protected static final Comparator<Object> COMP = new Comparator<Object>() {
         @Override
@@ -274,107 +18,14 @@ public class Ops {
             return Ops.compare(o1, o2);
         }
     };
-
     protected static final Comparator<Object[]> COMP2 = new Comparator<Object[]>() {
         @Override
         public int compare(final Object[] o1, final Object[] o2) {
             return Ops.compare(o1[1], o2[1]);
         }
     };
-
-    private static List<Integer> preproc(final List<?> l) {
-        final List<Integer> p = new ArrayList<Integer>();
-        final int subl = l.size();
-        p.add(-1);
-        for (int i = 1, n = 0; i < subl; i++, n++) {
-            if (l.get(i).equals(l.get(n))) {
-                p.add(p.get(n));
-            } else {
-                p.add(n);
-                do {
-                    n = p.get(n);
-                } while (n >= 0 && !l.get(i).equals(l.get(n)));
-            }
-        }
-        return p;
-    }
-
-    protected static int find(final List<?> s, final List<?> sub) {
-        final List<Integer> p = preproc(sub);
-        final int sl = s.size();
-        final int max = sub.size() - 1;
-
-        for (int i = 0, m = 0; i < sl; i++, m++) {
-            while (m >= 0 && !sub.get(m).equals(s.get(i))) {
-                m = p.get(m);
-            }
-            if (m == max) {
-                return i - m;
-            }
-        }
-        return -1;
-    }
-
-    protected static List<?> split(final List<?> s, final List<?> sub, final boolean empty) {
-        final List<Integer> p = preproc(sub);
-        final int sl = s.size();
-        final int max = sub.size() - 1;
-
-        final List<Object> l = new ArrayList<Object>();
-        int x = 0;
-        for (int i = 0, m = 0; i < sl; i++, m++) {
-            while (m >= 0 && !sub.get(m).equals(s.get(i))) {
-                m = p.get(m);
-            }
-            if (m == max) {
-                final List<?> t = s.subList(x, i - m);
-                if (empty || !t.isEmpty()) {
-                    l.add(new ArrayList<Object>(t));
-                }
-                x = i + 1;
-                m = -1;
-            }
-        }
-        final List<?> t = s.subList(x, s.size());
-        if (empty || !t.isEmpty()) {
-            l.add(new ArrayList<Object>(t));
-        }
-        return l;
-    }
-
-    protected static List<Object> pair(final Object x, final Object y) {
-        final List<Object> l = new ArrayList<Object>(2);
-        l.add(x);
-        l.add(y);
-        return l;
-    }
-
-    protected static int adjustIndexMod(final Object x, final int n) {
-        if (!(x instanceof Long)) {
-            throw new IllegalArgumentException(x.getClass().getSimpleName() + " can't be an index");
-        }
-        int y = (int) ((Long) x % n);
-        if (y < 0) {
-            y += n;
-        }
-        return y;
-    }
-
-    protected static int adjustIndex(final Object x, final int n) {
-        if (!(x instanceof Long)) {
-            throw new IllegalArgumentException(x.getClass().getSimpleName() + " can't be an index");
-        }
-        int y = ((Long) x).intValue();
-        if (y < 0) {
-            y += n;
-            if (y < 0) {
-                y = 0;
-            }
-        } else if (y > n) {
-            y = n;
-        }
-        return y;
-    }
+    private static final Op[] TABLE = new Op[256];
+    private static final Map<String, Op> MAP = new HashMap<String, Op>();
 
     static {
         add(new Op2("+") {
@@ -2398,7 +2049,7 @@ public class Ops {
                     }
                     if (bi > n) {
                         final List<Object> z = new ArrayList<Object>();
-                        z.add(new ArrayList<Object>(al.subList(0,al.size())));
+                        z.add(new ArrayList<Object>(al.subList(0, al.size())));
                         return z;
                     }
                     final List<Object> l = new ArrayList<Object>(n - bi + 1);
@@ -2479,15 +2130,21 @@ public class Ops {
         add(new Op1("¡") {
             @Override
             protected Object calc(Convex x, Object a) {
-                if (!isNumber(a)) {
-                    throw fail(a);
+                if (isNumber(a)) {
+                    final long d = toLong(a);
+                    long result = 1;
+                    for (long i = 1; i <= d; i++) {
+                        result = result * i;
+                    }
+                    return result;
+                } else if (isList(a)) {
+                    Object O = x.getVar('O');
+                    x.push(a);
+                    Block.parse(new StringReader("_ª0*:O;{O\\+:O}%"), false).run(x);
+                    x.setVar('O', O);
+                    return null;
                 }
-                final long d = toLong(a);
-                long result = 1;
-                for (long i = 1; i <= d; i++) {
-                    result = result * i;
-                }
-                return result;
+                throw fail(a);
             }
         });
 
@@ -2497,7 +2154,7 @@ public class Ops {
                 if (!isNumber(a)) {
                     throw fail(a);
                 }
-                return simplify(toDouble(a)/2.0);
+                return simplify(toDouble(a) / 2.0);
             }
         });
 
@@ -2532,13 +2189,13 @@ public class Ops {
                     return ((Quaternion) a).multiply(-1);
                 }
                 if (isChar(a)) {
-                    return (char)(toChar(a)^32);
+                    return (char) (toChar(a) ^ 32);
                 }
                 if (isString(a)) {
                     List<?> list = toList(a);
                     List<Object> result = new ArrayList<Object>();
                     for (Object c : list) {
-                        result.add((char)(toChar(c)^32));
+                        result.add((char) (toChar(c) ^ 32));
                     }
                     return result;
                 }
@@ -2567,14 +2224,15 @@ public class Ops {
         add(new Op1("þ") {
             @Override
             protected Object calc(Convex x, Object a) {
-                if (!isNumber(a) || !isString(a)) {
-                    throw fail(a);
-                }
                 if (isNumber(a)) {
                     final double z = toDouble(a);
                     return isLong(a) ? (long) Math.toRadians(z) : Math.toRadians(z);
                 } else if (isString(a)) {
                     return new Regex(toStr(a));
+                } else if (isList(a)) {
+                    x.push(a);
+                    Block.parse(new StringReader("'|*þ"), false).run(x);
+                    return null;
                 }
                 throw fail(a);
             }
@@ -2589,7 +2247,7 @@ public class Ops {
                 if (!isNumber(a)) {
                     throw fail(a);
                 }
-                return simplify(1.0/toDouble(a));
+                return simplify(1.0 / toDouble(a));
             }
         });
 
@@ -2871,7 +2529,7 @@ public class Ops {
         add(new Op("¢") {
             @Override
             public void run(Convex x) {
-                x.push((Math.sqrt(5)+1.0)/2.0);
+                x.push((Math.sqrt(5) + 1.0) / 2.0);
             }
         });
 
@@ -2908,27 +2566,30 @@ public class Ops {
         add(new Op2("Û") {
             @Override
             protected Object calc(Convex x, Object a, Object b) {
-                if (!isList(a)&&!isList(b)) {
+                if (!isList(a) && !isList(b)) {
                     return boolVal(a.getClass().getSimpleName().equals(b.getClass().getSimpleName()));
                 } else {
-                    if (isList(a)&&isList(b)) {
+                    if (isList(a) && isList(b)) {
                         List<?> la = toList(a);
                         List<?> lb = toList(b);
-                        if (la.size()!=lb.size()) return boolVal(false);
+                        if (la.size() != lb.size()) return boolVal(false);
                         for (int i = 0; i < la.size(); i++) {
-                            if (!la.get(i).getClass().getSimpleName().equals(lb.get(i).getClass().getSimpleName())) return boolVal(false);
+                            if (!la.get(i).getClass().getSimpleName().equals(lb.get(i).getClass().getSimpleName()))
+                                return boolVal(false);
                         }
                         return boolVal(true);
                     } else if (isList(a)) {
                         List<?> la = toList(a);
                         for (Object o : la) {
-                            if (!o.getClass().getSimpleName().equals(b.getClass().getSimpleName())) return boolVal(false);
+                            if (!o.getClass().getSimpleName().equals(b.getClass().getSimpleName()))
+                                return boolVal(false);
                         }
                         return boolVal(true);
                     } else {
                         List<?> la = toList(a);
                         for (Object o : la) {
-                            if (!o.getClass().getSimpleName().equals(a.getClass().getSimpleName())) return boolVal(false);
+                            if (!o.getClass().getSimpleName().equals(a.getClass().getSimpleName()))
+                                return boolVal(false);
                         }
                         return boolVal(true);
                     }
@@ -2940,13 +2601,13 @@ public class Ops {
             @Override
             protected Object calc(Convex x, Object a) {
                 if (isNumber(a)) {
-                    return boolVal(toLong(a)==0||toLong(a)==1);
+                    return boolVal(toLong(a) == 0 || toLong(a) == 1);
                 } else if (isList(a)) {
                     x.push(a);
                     List<?> list = toList(a);
                     List<Object> result = new ArrayList<Object>();
-                    for (Object obj: list) {
-                        result.add(0,obj);
+                    for (Object obj : list) {
+                        result.add(0, obj);
                     }
                     return result;
                 }
@@ -2977,7 +2638,7 @@ public class Ops {
                 List<Object> unique = new ArrayList<Object>();
                 Object last = null;
                 for (Object obj : toList(a)) {
-                    if (obj!=last) {
+                    if (obj != last) {
                         unique.add(obj);
                         last = obj;
                     }
@@ -2992,8 +2653,8 @@ public class Ops {
                 if (!isList(a)) throw fail(a);
                 List<?> list = toList(a);
                 List<Object> result = new ArrayList<Object>();
-                for (Object obj: list) {
-                    result.add(0,obj);
+                for (Object obj : list) {
+                    result.add(0, obj);
                 }
                 return result;
             }
@@ -3131,8 +2792,8 @@ public class Ops {
                 final List<?> al = toList(a);
                 final List<?> bl = toList(b);
                 List<Object> cl = new ArrayList<Object>();
-                for (Object obj: bl) {
-                    cl.add(0,obj);
+                for (Object obj : bl) {
+                    cl.add(0, obj);
                 }
                 final int n = cl.size();
                 final List<Object> l = new ArrayList<Object>(al.size());
@@ -3180,9 +2841,456 @@ public class Ops {
                 if (!isNumber(a)) {
                     throw fail(a);
                 }
-                return simplify(toDouble(a)*2.0);
+                return simplify(toDouble(a) * 2.0);
             }
         });
+
+        add(new Op1("ä") {
+            @Override
+            protected Object calc(Convex x, Object a) {
+                if (!isString(a)) {
+                    throw fail(a);
+                }
+                if (isString(a)) {
+                    x.push(a);
+                    Block.parse(new StringReader("®\\s\"ö"), false).run(x);
+                    return null;
+                }
+                throw fail(a);
+            }
+        });
+
+        add(new Op1("î") {
+            @Override
+            protected Object calc(Convex x, Object a) {
+                if (!isList(a)) {
+                    throw fail(a);
+                }
+                if (isList(a)) {
+                    x.push(a);
+                    Block.parse(new StringReader("2ew{~\\-}%"), false).run(x);
+                    return null;
+                }
+                throw fail(a);
+            }
+        });
+
+        add(new Op2("§") {
+            @Override
+            protected Object calc(Convex x, Object a, Object b) {
+                if (isNumber(a) && isList(b)) {
+                    return calc(x, b, a);
+                } else if (isList(a) && isNumber(b)) {
+                    if (isString(a)) {
+                        x.push(b);
+                        x.push(a);
+                        Block.parse(new StringReader("®(?<!')\\\\s\"ö=~"), false).run(x);
+                        return null;
+                    } else {
+                        x.push(b);
+                        x.push(a);
+                        Block.parse(new StringReader("=~"), false).run(x);
+                        return null;
+                    }
+                }
+                throw fail(a, b);
+            }
+        });
+
+        add(new Op1("ï") {
+            @Override
+            protected Object calc(Convex x, Object a) {
+                if (!isList(a)) {
+                    throw fail(a);
+                }
+                List<?> list = toList(a);
+                List<Object> result = new ArrayList<Object>();
+                int length = list.size();
+                for (int c = 0; c < length; c++) {
+                    for (int i = 1; i <= length - c; i++) {
+                        result.add(new ArrayList<Object>(list.subList(c, c + i)));
+                    }
+                }
+                return result;
+            }
+        });
+
+        add(new Op2("ì") {
+            @Override
+            protected Object calc(Convex x, Object a, Object b) {
+                if (isNumber(a) && isList(b)) {
+                    return calc(x, b, a);
+                } else if (isList(a) && isNumber(b)) {
+                    List<Object> results = new ArrayList<Object>();
+                    List<?> list = toList(a);
+                    int[] indices;
+                    CombinationGenerator cg = new CombinationGenerator(list.size(), toInt(b));
+                    List<Object> result;
+                    while (cg.hasMore ()) {
+                        result = new ArrayList<Object>();
+                        indices = cg.getNext ();
+                        for (int i = 0; i < indices.length; i++) {
+                            result.add(list.get(indices[i]));
+                        }
+                        //System.out.println(result.toString());
+                        results.add(result);
+                    }
+                    return results;
+                }
+                throw fail(a, b);
+            }
+        });
+
+        add(new Op("í") {
+            @Override
+            public void run(Convex x) {
+                Block.parse(new StringReader("ì{e!~}%"), false).run(x);
+            }
+        });
+    }
+
+    private static void add(final Op op) {
+        final String s = op.toString();
+        if (s.length() != 1) {
+            if (MAP.put(s, op) != null) {
+                throw new RuntimeException("Duplicate operator: " + s);
+            }
+            return;
+        }
+        final int x = s.charAt(0);
+        if (x > 255) {
+            throw new IllegalArgumentException(s);
+        }
+        if (TABLE[x] != null) {
+            throw new RuntimeException("Duplicate operator: " + s);
+        }
+        TABLE[x] = op;
+    }
+
+    public static Op get(final char c) {
+        if (c > 255) {
+            throw new IllegalArgumentException(String.valueOf(c));
+        }
+        return TABLE[c];
+    }
+
+    public static Op get(final String s) {
+        return s.length() == 1 ? get(s.charAt(0)) : MAP.get(s);
+    }
+
+    public static Op push(final Object o) {
+        return new Op(repr(o)) {
+            @Override
+            public void run(final Convex x) {
+                x.push(o);
+            }
+        };
+    }
+
+    public static Op pushVar(final char c) {
+        return new Op(String.valueOf(c)) {
+            @Override
+            public void run(final Convex x) {
+                final Object o = x.getVar(c);
+                if (isBlock(o)) {
+                    toBlock(o).run(x);
+                } else {
+                    x.push(o);
+                }
+            }
+        };
+    }
+
+    public static Op setVar(final char c) {
+        return new Op(":" + c) {
+            @Override
+            public void run(final Convex x) {
+                x.setVar(c, x.peek());
+            }
+        };
+    }
+
+    public static Op quickMap(final Op op) {
+        return new Op1(":" + op) {
+            @Override
+            public Object calc(final Convex x, final Object a) {
+                if (!isList(a)) {
+                    throw fail(a);
+                }
+                final List<?> al = toList(a);
+                x.mark();
+                for (Object o : al) {
+                    x.push(o);
+                    op.run(x);
+                }
+                x.popMark();
+                return null;
+            }
+        };
+    }
+
+    public static Op quickFold(final Op op) {
+        return new Op1(":" + op) {
+            @Override
+            public Object calc(final Convex x, final Object a) {
+                if (!isList(a)) {
+                    throw fail(a);
+                }
+                final List<?> al = toList(a);
+                final int n = al.size();
+                x.push(al.get(0));
+                for (int i = 1; i < n; ++i) {
+                    x.push(al.get(i));
+                    op.run(x);
+                }
+                return null;
+            }
+        };
+    }
+
+    public static Op quickMap2(final Op op) {
+        return new Op2("f" + op) {
+            @Override
+            public Object calc(final Convex x, final Object a, final Object b) {
+                if (isList(a)) {
+                    final List<?> al = toList(a);
+                    x.mark();
+                    for (Object o : al) {
+                        x.push(o);
+                        x.push(b);
+                        op.run(x);
+                    }
+                    x.popMark();
+                    return null;
+                }
+                if (isList(b)) {
+                    final List<?> bl = toList(b);
+                    x.mark();
+                    for (Object o : bl) {
+                        x.push(a);
+                        x.push(o);
+                        op.run(x);
+                    }
+                    x.popMark();
+                    return null;
+                }
+                throw fail(a, b);
+            }
+        };
+    }
+
+    public static Op forLoop(final char c) {
+        return new Op2("f" + c) {
+            @Override
+            protected Object calc(final Convex x, final Object a, final Object b) {
+                if (isBlock(b)) {
+                    final Block bb = toBlock(b);
+                    if (isNumber(a)) {
+                        final long al = toLong(a);
+                        for (long i = 0; i < al; ++i) {
+                            x.setVar(c, i);
+                            bb.run(x);
+                        }
+                        return null;
+                    }
+                    if (isList(a)) {
+                        final List<?> al = toList(a);
+                        for (Object i : al) {
+                            x.setVar(c, i);
+                            bb.run(x);
+                        }
+                        return null;
+                    }
+                } else if (isBlock(a)) {
+                    return calc(x, b, a);
+                }
+                throw fail(a, b);
+            }
+        };
+    }
+
+    public static Op vector(final Op op) {
+        return new Op2("." + op) {
+            @Override
+            public Object calc(final Convex x, final Object a, final Object b) {
+                if (!bothList(a, b)) {
+                    throw fail(a, b);
+                }
+                final List<?> al = toList(a);
+                final int an = al.size();
+                final List<?> bl = toList(b);
+                final int bn = bl.size();
+                final int n = Math.max(an, bn);
+                x.mark();
+                for (int i = 0; i < n; ++i) {
+                    if (i < an) {
+                        x.push(al.get(i));
+                        if (i < bn) {
+                            x.push(bl.get(i));
+                            op.run(x);
+                        }
+                    } else {
+                        x.push(bl.get(i));
+                    }
+                }
+                x.popMark();
+                return null;
+            }
+        };
+    }
+
+    public static Op e10(final Number exp) {
+        return new Op1("e" + exp) {
+            @Override
+            protected Object calc(final Convex x, final Object a) {
+                if (!isNumber(a)) {
+                    throw fail(a);
+                }
+                if (isDouble(exp)) {
+                    return toDouble(a) * Math.pow(10, exp.doubleValue());
+                }
+                if (!isLong(exp)) {
+                    throw fail(a);
+                }
+                final long bl = exp.longValue();
+                if (isDouble(a) || bl < 0) {
+                    return Double.parseDouble(a + "e" + bl);
+                }
+                return adjustInt(toBigint(a).multiply(BigInteger.TEN.pow((int) bl)));
+            }
+        };
+    }
+
+    protected static Object adjustInt(final BigInteger x) {
+        return x.bitLength() < 64 ? x.longValue() : x;
+    }
+
+    protected static final int compareLists(final List<?> a, final List<?> b) {
+        final int an = a.size();
+        final int bn = b.size();
+        final int n = Math.min(an, bn);
+        for (int i = 0; i < n; ++i) {
+            final int x = compare(a.get(i), b.get(i));
+            if (x != 0) {
+                return x;
+            }
+        }
+        return an - bn;
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    protected static final int compare(final Object a, final Object b) {
+        if (bothList(a, b)) {
+            return compareLists(toList(a), toList(b));
+        }
+        if (a.getClass() == b.getClass()) {
+            return ((Comparable) a).compareTo(b);
+        }
+        if (bothNumber(a, b)) {
+            if (anyDouble(a, b)) {
+                return Double.compare(toDouble(a), toDouble(b));
+            }
+            return toBigint(a).compareTo(toBigint(b));
+        }
+        if (anyChar(a, b) && anyNumber(a, b)) {
+            return ((Long) toLong(a)).compareTo(toLong(b));
+        }
+        throw new IllegalArgumentException("Can't compare " + a.getClass().getSimpleName()
+                + " with " + b.getClass().getSimpleName());
+    }
+
+    private static List<Integer> preproc(final List<?> l) {
+        final List<Integer> p = new ArrayList<Integer>();
+        final int subl = l.size();
+        p.add(-1);
+        for (int i = 1, n = 0; i < subl; i++, n++) {
+            if (l.get(i).equals(l.get(n))) {
+                p.add(p.get(n));
+            } else {
+                p.add(n);
+                do {
+                    n = p.get(n);
+                } while (n >= 0 && !l.get(i).equals(l.get(n)));
+            }
+        }
+        return p;
+    }
+
+    protected static int find(final List<?> s, final List<?> sub) {
+        final List<Integer> p = preproc(sub);
+        final int sl = s.size();
+        final int max = sub.size() - 1;
+
+        for (int i = 0, m = 0; i < sl; i++, m++) {
+            while (m >= 0 && !sub.get(m).equals(s.get(i))) {
+                m = p.get(m);
+            }
+            if (m == max) {
+                return i - m;
+            }
+        }
+        return -1;
+    }
+
+    protected static List<?> split(final List<?> s, final List<?> sub, final boolean empty) {
+        final List<Integer> p = preproc(sub);
+        final int sl = s.size();
+        final int max = sub.size() - 1;
+
+        final List<Object> l = new ArrayList<Object>();
+        int x = 0;
+        for (int i = 0, m = 0; i < sl; i++, m++) {
+            while (m >= 0 && !sub.get(m).equals(s.get(i))) {
+                m = p.get(m);
+            }
+            if (m == max) {
+                final List<?> t = s.subList(x, i - m);
+                if (empty || !t.isEmpty()) {
+                    l.add(new ArrayList<Object>(t));
+                }
+                x = i + 1;
+                m = -1;
+            }
+        }
+        final List<?> t = s.subList(x, s.size());
+        if (empty || !t.isEmpty()) {
+            l.add(new ArrayList<Object>(t));
+        }
+        return l;
+    }
+
+    protected static List<Object> pair(final Object x, final Object y) {
+        final List<Object> l = new ArrayList<Object>(2);
+        l.add(x);
+        l.add(y);
+        return l;
+    }
+
+    protected static int adjustIndexMod(final Object x, final int n) {
+        if (!(x instanceof Long)) {
+            throw new IllegalArgumentException(x.getClass().getSimpleName() + " can't be an index");
+        }
+        int y = (int) ((Long) x % n);
+        if (y < 0) {
+            y += n;
+        }
+        return y;
+    }
+
+    protected static int adjustIndex(final Object x, final int n) {
+        if (!(x instanceof Long)) {
+            throw new IllegalArgumentException(x.getClass().getSimpleName() + " can't be an index");
+        }
+        int y = ((Long) x).intValue();
+        if (y < 0) {
+            y += n;
+            if (y < 0) {
+                y = 0;
+            }
+        } else if (y > n) {
+            y = n;
+        }
+        return y;
     }
 
     private static boolean isPrime(long n) {
@@ -3193,6 +3301,27 @@ public class Ops {
         }
         return true;
     }
+
+    /*REMOVE:
+    private static List<List<Object>> getPermutations (List<?> list) {
+        return getPermutations(list, list.size());
+    }
+
+    private static List<List<Object>>  getPermutations (List<?> list, int length) {
+        List<List<Object>> result = new ArrayList<List<Object>>();
+        int n = list.size();
+        int r = length;
+        if (r > n) return result;
+        List<Integer> indices = new ArrayList<Integer>();
+        for (int i = 0; i < n; ++i) {
+            indices.add(i);
+        }
+        List<Integer> cycles = new ArrayList<Integer>();
+        for (int i = n; i > n - r; i--) {
+            indices.add(i);
+        }
+    }
+    */
 
     public static void main(final String... args) {
         System.out.println("Defined simple operators:");
