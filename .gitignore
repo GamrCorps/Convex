@@ -6,3 +6,4 @@ out/artifacts/convex/
 out/artifacts/convex_ide/
 out/META-INF/MANIFEST.MF
 sh.exe.stackdump
+*.convex

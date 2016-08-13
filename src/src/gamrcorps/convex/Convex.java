@@ -248,7 +248,7 @@ public class Convex {
         }
         x.setVar('Q', l);
         for (String s : x.getArgs()) {
-            if (s.startsWith("[")||s.startsWith("\"")||s.startsWith("{")||s.substring(0,0).matches("\\d")) {
+            if (s.startsWith("[")||s.startsWith("\"")||s.startsWith("{")||s.substring(0,1).matches("\\d")) {
                 x.runCode(Block.parse(new StringReader(s), false), false);
             } else {
                 x.push(Conv.strToList(s));
